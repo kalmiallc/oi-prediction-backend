@@ -1,10 +1,9 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
-
 import express from 'express';
 const app = express();
-
 import bodyParser from 'body-parser';
+import proxy from 'express-http-proxy';
 
 
 const version = '1.0.0'
@@ -18,10 +17,9 @@ app.get('/', function (req, res) {
 	res.send('oi-flare-proxy-api: ' + version);
 });
 
-app.post('/login', urlencodedParser, function (req, res) {
-    if (!req.body) return res.sendStatus(400);
-    res.send(`welcome, ${req.body.username}`);
-});
+// act as get proxy for the https://coston2-api.flare.network/ext/C/rpc
+app.use('/RPC', proxy('https://coston2-api.flare.network/ext/C/rpc'));
+
 
 app.listen(3000, () => console.log('Server ready on port 3000.'));
 
