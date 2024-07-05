@@ -1,26 +1,33 @@
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 dotenv.config();
-import express from 'express';
+import express from "express";
 const app = express();
-import bodyParser from 'body-parser';
-import proxy from 'express-http-proxy';
+import {
+  getAllEvents,
+  getEventByUuid,
+  getEventsByFilter,
+  getWinnerForEvent,
+} from "./controllers.js";
+import ConnectDB from "./db.js";
+import parseResults from "./result-parser.js";
 
 
-const version = '1.0.0'
+const version = "1.0.0";
 
-// Create application/x-www-form-urlencoded parser
-const urlencodedParser = bodyParser.urlencoded({ extended: false });
-
-// act as get proxy for the https://coston2-api.flare.network/ext/C/rpc
-app.use('/rpc', proxy('coston2-api.flare.network/ext/C/rpc'));
-
-app.get('/', function (req, res) {
-	res.send('oi-flare-proxy-api: ' + version);
+await ConnectDB();
+app.get("/", function (req, res) {
+  res.send("oi-flare-proxy-api: " + version);
 });
 
+app.get("/allEvents", getAllEvents);
+app.get("/event/:uuid", getEventByUuid);
+app.get("/events", getEventsByFilter);
+app.get("/event/winner/:uuid", getWinnerForEvent);
+app.get("/worker", async (req, res) => {
+  const number = await parseResults();
+  res.send({ numberParsed: number });
+});
 
-
-
-app.listen(3000, () => console.log('Server ready on port 3000.'));
+app.listen(3000, () => console.log("Server ready on port 3000."));
 
 export default app;

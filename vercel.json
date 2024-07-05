@@ -1,4 +1,15 @@
 {
-	"version": 2,
-	"rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+  "version": 2,
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 200
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/worker",
+      "schedule": "0 * * * *"
+    }
+  ]
 }
