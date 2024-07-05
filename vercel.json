@@ -3,7 +3,7 @@
   "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
   "functions": {
     "api/index.js": {
-      "maxDuration": 200
+      "maxDuration": 60
     }
   },
   "crons": [

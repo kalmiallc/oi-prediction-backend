@@ -7,6 +7,7 @@ const sportEventModel = new mongoose.Schema({
   endTime: { type: Number, required: true },
   gender: { type: String, required: true },
   group: { type: String, required: true },
+  sport: { type: String, required: true },
   teams: [{ type: String, required: true }],
   uuid: { type: String, required: true, unique: true },
   match: { type: String, required: true },

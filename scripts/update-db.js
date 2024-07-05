@@ -23,7 +23,9 @@ function convertAndAddTimes(data) {
     const startTimeEpoch = new Date(event.startTime).getTime() / 1000; // Convert startTime to Unix epoch
     const endTime = new Date(startTimeEpoch * 1000 + 2 * 60 * 60 * 1000); // Add 2 hours to startTime for endTime
     const endTimeEpoch = endTime.getTime() / 1000; // Convert endTime to Unix epoch
-    const uuid = generateUUID(event.title, event.startTime);
+    const uuid = generateUUID(event.match, event.startTime);
+    console.log(`Adding event for: ${event.match}`);
+
 
     return {
       ...event,
