@@ -23,7 +23,7 @@ app.get("/allEvents", getAllEvents);
 app.get("/event/:uuid", getEventByUuid);
 app.get("/events", getEventsByFilter);
 app.get("/event/winner/:uuid", getWinnerForEvent);
-app.get("/worker", async (req, res) => {
+app.get("/run-parse", async (req, res) => {
   const number = await parseResults();
   res.send({ numberParsed: number });
 });
