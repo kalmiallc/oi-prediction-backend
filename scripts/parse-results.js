@@ -6,7 +6,7 @@ dotenv.config();
 (async () => {
   await ConnectDB();
   await parseResults();
-  console.log("Winners updated - finally!");
+  console.log("Winners updated!");
   process.exit(0);
 })().catch(async (err) => {
   console.log(err);
