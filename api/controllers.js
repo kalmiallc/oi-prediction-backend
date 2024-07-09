@@ -5,7 +5,7 @@ const getAllEvents = async (req, res) => {
   res.send(events);
 };
 
-const getEventByUuid = async (req, res) => {
+const getEventByUid = async (req, res) => {
   const event = await SportEventModel.findOne({ uuid: req.params.uuid });
   res.send(event);
 };
@@ -21,4 +21,4 @@ const getWinnerForEvent = async (req, res) => {
 };
 
 
-export { getAllEvents, getEventByUuid, getEventsByFilter, getWinnerForEvent };
+export { getAllEvents, getEventByUid, getEventsByFilter, getWinnerForEvent };

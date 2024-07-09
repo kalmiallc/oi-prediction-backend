@@ -4,7 +4,7 @@ import express from "express";
 const app = express();
 import {
   getAllEvents,
-  getEventByUuid,
+  getEventByUid,
   getEventsByFilter,
   getWinnerForEvent,
 } from "./controllers.js";
@@ -20,7 +20,7 @@ app.get("/", function (req, res) {
 });
 
 app.get("/allEvents", getAllEvents);
-app.get("/event/:uuid", getEventByUuid);
+app.get("/event/:uuid", getEventByUid);
 app.get("/events", getEventsByFilter);
 app.get("/event/winner/:uuid", getWinnerForEvent);
 app.get("/run-parse", async (req, res) => {
