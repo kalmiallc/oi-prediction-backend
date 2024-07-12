@@ -11,7 +11,12 @@ const getEventByUid = async (req, res) => {
 };
 
 const getEventsByFilter = async (req, res) => {
-  const events = await SportEventModel.find({ ...req.query });
+  let query = { ...req.query };
+  // Check if 'teams' is part of the query and adjust the query to use $in operator
+  if (query.teams) {
+    query.teams = { $in: query.teams.split(';') }; // Assuming teams are provided as a comma-separated list
+  }
+  const events = await SportEventModel.find(query);
   res.send(events);
 };
 
