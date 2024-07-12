@@ -14,10 +14,10 @@ const sportEventModel = new mongoose.Schema({
   match: { type: String, required: true },
   choice1: { type: String, required: true },
   choice2: { type: String, required: true },
-  choice3: { type: String, required: true },
+  choice3: { type: String, required: false },
   initialBets1: { type: Number, required: true },
   initialBets2: { type: Number, required: true },
-  initialBets3: { type: Number, required: true },
+  initialBets3: { type: Number, required: false },
   initialPool: { type: Number, required: true },
   winner: { type: Number, required: false, default: null },
 });
