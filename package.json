@@ -6,7 +6,8 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "nodemon api/index.js",
 		"import": "node ./scripts/update-db.js",
-		"parseResults": "node ./scripts/parse-results.js"
+		"parseResults": "node ./scripts/parse-results.js",
+		"parseEvents": "node ./scripts/parse-events.js"
 	},
 	"keywords": [],
 	"author": "",

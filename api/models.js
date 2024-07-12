@@ -1,12 +1,15 @@
 import mongoose from 'mongoose';
 
+/***
+ * Sports event model.
+ */
 const sportEventModel = new mongoose.Schema({
   date: { type: String, required: true },
   time: { type: String, required: true },
   startTime: { type: Number, required: true },
   gender: { type: String, required: true },
   genderByIndex: { type: Number, required: true },
-  group: { type: String, required: true },
+  group: { type: String, required: false },
   sport: { type: String, required: true },
   sportByIndex: { type: Number, required: true },
   teams: [{ type: String, required: true }],
