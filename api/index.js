@@ -20,9 +20,9 @@ app.get("/", function (req, res) {
 });
 
 app.get("/allEvents", getAllEvents);
-app.get("/event/:uuid", getEventByUid);
+app.get("/event/:uid", getEventByUid);
 app.get("/events", getEventsByFilter);
-app.get("/event/winner/:uuid", getWinnerForEvent);
+app.get("/event/winner/:uid", getWinnerForEvent);
 app.get("/run-parse", async (req, res) => {
   const number = await parseResults();
   res.send({ numberParsed: number });

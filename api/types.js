@@ -12,4 +12,11 @@ const Sports = {
     WaterPolo: "Water Polo",
 };
 
+const Gender = {
+    Men: "Men",
+    Women: "Women",
+    Mixed: "Mixed",
+}
+
 export default Sports;
+export { Gender };
