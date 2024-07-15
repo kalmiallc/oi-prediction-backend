@@ -11,7 +11,7 @@ export function createUid(sportIndex, genderIndex, startTime, teams) {
       [ sportIndex, genderIndex, startTime, teamsString ]
     );
 
-    console.log(`Creating UID for ${teamsString} with sportIndex ${sportIndex}, genderIndex ${genderIndex}, startTime ${startTime}`, itemsKeccak);
+    // console.log(`Creating UID for ${teamsString} with sportIndex ${sportIndex}, genderIndex ${genderIndex}, startTime ${startTime}`, itemsKeccak);
     return itemsKeccak;
   } catch (error) {
     console.log('sportIndex: ', sportIndex);

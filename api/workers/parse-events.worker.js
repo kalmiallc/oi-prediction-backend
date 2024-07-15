@@ -4,6 +4,21 @@
 import { createUid, getGenderByIndex, getSportIndex } from "../../api/utils.js";
 import Sports from "../types.js";
 import SportEventModel from "../../api/models.js";
+
+
+/**
+ * Which sports should be parsed.
+ */
+const PARSE_SPORTS = [
+  Sports.Basketball,
+  Sports.Basketball3x3,
+  Sports.FieldHockey,
+  Sports.Football,
+  Sports.Handball,
+  Sports.Volleyball,
+  Sports.WaterPolo,
+]
+
 /**
  * Full schedule URL.
  */
@@ -29,12 +44,17 @@ const UrlSportEncoding = {
   FieldHockey: "hockey",
   Football: "football",
   Handball: "handball",
-  TableTennis: "table tennis",
+  TableTennis: "table-tennis",
   Tennis: "tennis",
   Volleyball: "volleyball",
   WaterPolo: "water-polo",
 };
 
+/**
+ * Parses gender out of event description.
+ * @param {*} eventString Event string.
+ * @returns Parsed gender.
+ */
 function getGender(eventString) {
   let regex = /(Men|Women|Mixed)/;
   let match = eventString.match(regex);
@@ -57,6 +77,57 @@ function getGender(eventString) {
   return match ? match[0] : null;
 }
 
+/**
+ * Checks if certain sports event can be tied.
+ * @param {*} sport Sport.
+ * @param {*} description Event description.
+ * @param {*} teams Teams.
+ * @returns Boolean.
+ */
+function canBeTied(sport, description, teams) {
+  sport = Sports[sport];
+
+  const NO_TIES = [Sports.Basketball, Sports.Basketball3x3, Sports.Badminton, Sports.BeachVolley, Sports.Volleyball, Sports.TableTennis, Sports.Tennis]
+  if (NO_TIES.includes(sport)) {
+    return false;
+  }
+
+  if (teams.length < 2) {
+    return false;
+  }
+
+  description = description.toLowerCase();
+  switch (sport) {
+    case Sports.FieldHockey:
+      if (description.includes('pool')) {
+        return true;
+      }
+
+    case Sports.Football:
+      if (description.includes('group')) {
+        return true;
+      }
+
+    case Sports.Handball:
+      if (description.includes('preliminary round') || description.includes('group')) {
+        return true;
+      }
+
+    case Sports.WaterPolo:
+      if (description.includes('preliminary round') || description.includes('group')) {
+        return true;
+      }
+
+    default:
+      return false;
+  }
+}
+
+/**
+ * Parses group out of event description.
+ * @param {*} eventString Event string.
+ * @returns Parsed group.
+ */
 function getGroup(eventString) {
   const regex = /\b(Group [A-Z]|Preliminary Round(?: - Group [A-Z]| - Pool [A-Z])?|Pool [A-Z]|Quarter(?:-?finals?)?|Semi(?:-?finals?)?|Play-in Games|Round of 16|Bronze Medal (?:Game|Match)|Gold Medal (?:Game|Match)|Classification \d+(?:th)?-\d+(?:th)?)\b/i;
   const match = eventString.match(regex);
@@ -64,6 +135,9 @@ function getGroup(eventString) {
 }
 
 
+/**
+ * Parses events.
+ */
 async function parseEvents() {
 
   let htmlResponse = null;
@@ -88,18 +162,14 @@ async function parseEvents() {
     throw new Error('No build ID found.')
   }
 
-
-
-  const keys = new Set();
-
-  const sports = Object.keys(Sports);
+  const sports = Object.keys(Sports).filter(key => PARSE_SPORTS.includes(Sports[key]));
   for (const sport of sports) {
     const sportEncoding = UrlSportEncoding[sport];
-    const url = EVENTS_URL(sportEncoding, buildId)
 
+    const url = EVENTS_URL(sportEncoding, buildId)
     try {
       let res = await fetch(url);
-      res = await res.json()
+      res = await res.json();
 
       let schedule = [];
       const scheduleWrapper = res.pageProps.page.items.find(i => i.name === 'scheduleWrapper');
@@ -113,51 +183,64 @@ async function parseEvents() {
 
       const parsedSchedule = [];
       for (const match of schedule) {
-        const parsedDate = new Date(match.startDateTimeUtc).toISOString();
+        const parsedDate = new Date(match.startDateTimeUtc).toISOString().split('T');
 
         const teams = [];
-        let choice1 = null;
-        let choice2 = null;
+        const choices = [];
         let matchName = match.description;
 
         if (match.match?.team1 && match.match?.team2) {
           teams.push(match.match.team1.description);
           teams.push(match.match.team2.description);
-          matchName += ` - ${teams.join(' vs ')}`
+          matchName += ` - ${teams.join(' vs ')}`;
 
-          choice1 = teams[0];
-          choice2 = teams[1];
+          choices.push({
+            choice: teams[0],
+            initialBet: 10
+          });
+          choices.push({
+            choice: teams[1],
+            initialBet: 10
+          });
+
+          if (canBeTied(sport, match.description, teams)) {
+            choices.push({
+              choice: 'DRAW',
+              initialBet: 10
+            });
+          }
         }
-
-        keys.add(keys.add(match.description));
-        
 
         const gender = getGender(match.description);
         const startTimeEpoch = new Date(match.startDateTimeUtc).getTime() / 1000;
+        const endTimeEpoch = new Date(match.endDateTimeUtc).getTime() / 1000;
         const sportIndex = getSportIndex(sport);
         const genderIndex = getGenderByIndex(gender);
-        const uid = createUid(sportIndex, genderIndex, startTimeEpoch, teams);
         const group = getGroup(match.description);
-        
+
+
+        let uid = null;
+        if (teams.length >= 2 && choices.length >= 2) {
+          uid = createUid(sportIndex, genderIndex, startTimeEpoch, teams);
+        }
 
         const parsedMatch = {
           date: parsedDate[0],
-          time: parsedDate[1].substring(0,4),
+          time: parsedDate[1].substring(0,5),
           gender: gender,
+          startTime: startTimeEpoch,
+          endTime: endTimeEpoch,
           genderByIndex: genderIndex,
           group,
           sport: Sports[sport],
           sportByIndex: sportIndex,
           teams,
+          choices,
           uid,
           match: matchName,
-          choice1,
-          choice2,
-          initialBets1: 10,
-          initialBets2: 10,
-          initialBets3: 10,
-          initialPool: 600,
-          winner: null
+          initialPool: 60,
+          winner: null,
+          _externalId: match.unitCode
         };
 
         parsedSchedule.push(parsedMatch);
@@ -167,9 +250,7 @@ async function parseEvents() {
     } catch (error) {
       console.log(error);
     }
-
   }
-
 }
 
 export default parseEvents;
