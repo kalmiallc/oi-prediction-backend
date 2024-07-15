@@ -3,6 +3,14 @@ import  Sports  from './types.js';
 import { Gender } from './types.js';
 import { ethers } from "ethers";
 
+/**
+ * 
+ * @param {*} sportIndex 
+ * @param {*} genderIndex 
+ * @param {*} startTime 
+ * @param {*} teams 
+ * @returns 
+ */
 export function createUid(sportIndex, genderIndex, startTime, teams) {
   try {
     const teamsString = teams.join(',');
@@ -11,13 +19,8 @@ export function createUid(sportIndex, genderIndex, startTime, teams) {
       [ sportIndex, genderIndex, startTime, teamsString ]
     );
 
-    // console.log(`Creating UID for ${teamsString} with sportIndex ${sportIndex}, genderIndex ${genderIndex}, startTime ${startTime}`, itemsKeccak);
     return itemsKeccak;
   } catch (error) {
-    console.log('sportIndex: ', sportIndex);
-    console.log('genderIndex: ', genderIndex);
-    console.log('startTime: ', startTime);
-    console.log('teams: ', teams);
     console.log(error)
 
     throw error;
@@ -26,10 +29,20 @@ export function createUid(sportIndex, genderIndex, startTime, teams) {
 
 }
 
+/**
+ * 
+ * @param {*} sport 
+ * @returns 
+ */
 export function getSportIndex(sport) {
   return Object.keys(Sports).indexOf(sport);
 }
 
+/**
+ * 
+ * @param {*} gender 
+ * @returns 
+ */
 export function getGenderByIndex(gender) {
   return Object.keys(Gender).indexOf(gender);
 }

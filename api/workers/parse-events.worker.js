@@ -1,54 +1,11 @@
 
 
 
-import { createUid, getGenderByIndex, getSportIndex } from "../../api/utils.js";
-import Sports from "../types.js";
 import SportEventModel from "../../api/models.js";
+import { createUid, getGenderByIndex, getSportIndex } from "../../api/utils.js";
+import { EVENTS_URL, getBuildId, PARSE_SPORTS, UrlSportEncoding } from "../events-scrapping.js";
+import Sports from "../types.js";
 
-
-/**
- * Which sports should be parsed.
- */
-const PARSE_SPORTS = [
-  Sports.Basketball,
-  Sports.Basketball3x3,
-  Sports.FieldHockey,
-  Sports.Football,
-  Sports.Handball,
-  Sports.Volleyball,
-  Sports.WaterPolo,
-]
-
-/**
- * Full schedule URL.
- */
-const SCHEDULE_URL = 'https://olympics.com/en/paris-2024/schedule';
-
-/**
- * Returns URL for specific sport.
- * @param {*} sport Sport.
- * @param {*} buildId Olympic site build ID.
- * @returns Events URL for specific sport.
- */
-const EVENTS_URL = (sport, buildId) => `https://olympics.com/_next/data/${buildId}/en/paris-2024/schedule/${sport}.json?deviceType=desktop&countryCode=AX&path=paris-2024&path=schedule&path=${sport}`
-
-
-/**
- * URL encodings for specific sport.
- */
-const UrlSportEncoding = {
-  Basketball: "basketball",
-  Basketball3x3: "3x3-basketball",
-  Badminton: "badminton",
-  BeachVolley: "beach-volleyball",
-  FieldHockey: "hockey",
-  Football: "football",
-  Handball: "handball",
-  TableTennis: "table-tennis",
-  Tennis: "tennis",
-  Volleyball: "volleyball",
-  WaterPolo: "water-polo",
-};
 
 /**
  * Parses gender out of event description.
@@ -137,26 +94,8 @@ function getGroup(eventString) {
 /**
  * Parses events.
  */
-async function parseEvents() {
-
-  let htmlResponse = null;
-  try {
-    const res = await fetch(SCHEDULE_URL);
-    htmlResponse = await res.text();
-  } catch (error) {
-    console.log(error);
-
-    throw error;
-  }
-
-  let buildId = null;
-  if (htmlResponse) {
-    const match = htmlResponse.match(/"buildId":"(.*?)"/);
-    if (match[1]) {
-      buildId = match[1]
-    }
-  }
-
+export async function parseEvents() {
+  const buildId = await getBuildId();
   if (!buildId) {
     throw new Error('No build ID found.')
   }
@@ -254,4 +193,17 @@ async function parseEvents() {
   }
 }
 
-export default parseEvents;
+/**
+ * Worker handler.
+ * @param {*} req Request.
+ * @param {*} res Response.
+ */
+export default function handler(req, res) {
+  parseEvents()
+    .then(() => {
+      res.send({ ok: true });
+    })
+    .catch((err) => {
+      res.status(500).send({ ok: false, error: err });
+    });
+}

@@ -7,7 +7,8 @@
 		"start": "nodemon api/index.js",
 		"import": "node ./scripts/update-db.js",
 		"parseResults": "node ./scripts/parse-results.js",
-		"parseEvents": "node ./scripts/parse-events.js"
+		"parseEvents": "node ./scripts/parse-events.js",
+		"updateEvents": "node ./scripts/update-events.js"
 	},
 	"keywords": [],
 	"author": "",
