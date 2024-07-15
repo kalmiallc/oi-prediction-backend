@@ -26,9 +26,9 @@ const SCHEDULE_URL = 'https://olympics.com/en/paris-2024/schedule';
 
 /**
  * Returns URL for specific sport.
- * @param {*} sport 
- * @param {*} buildId 
- * @returns 
+ * @param {*} sport Sport.
+ * @param {*} buildId Olympic site build ID.
+ * @returns Events URL for specific sport.
  */
 const EVENTS_URL = (sport, buildId) => `https://olympics.com/_next/data/${buildId}/en/paris-2024/schedule/${sport}.json?deviceType=desktop&countryCode=AX&path=paris-2024&path=schedule&path=${sport}`
 
@@ -129,11 +129,10 @@ function canBeTied(sport, description, teams) {
  * @returns Parsed group.
  */
 function getGroup(eventString) {
-  const regex = /\b(Group [A-Z]|Preliminary Round(?: - Group [A-Z]| - Pool [A-Z])?|Pool [A-Z]|Quarter(?:-?finals?)?|Semi(?:-?finals?)?|Play-in Games|Round of 16|Bronze Medal (?:Game|Match)|Gold Medal (?:Game|Match)|Classification \d+(?:th)?-\d+(?:th)?)\b/i;
+  const regex = /\b(Group [A-Z]|Preliminary Round(?: - (?:Group|Pool) [A-Z])?|Preliminary Match|Pool [A-Z]|Pool Round|Group play stage|Quarter(?:-?finals?)?|Semi(?:-?finals?)?|Play-in Games|Round of 16|Bronze Medal (?:Game|Match)|Gold Medal (?:Game|Match)|Classification \d+(?:th)?-\d+(?:th)?)\b/i;
   const match = eventString.match(regex);
-  return match ? match[0] : null;
+  return match ? match[0] : 'None';
 }
-
 
 /**
  * Parses events.
@@ -219,7 +218,7 @@ async function parseEvents() {
         const group = getGroup(match.description);
 
 
-        let uid = null;
+        let uid = undefined;
         if (teams.length >= 2 && choices.length >= 2) {
           uid = createUid(sportIndex, genderIndex, startTimeEpoch, teams);
         }
@@ -242,13 +241,15 @@ async function parseEvents() {
           winner: null,
           _externalId: match.unitCode
         };
-
+  
         parsedSchedule.push(parsedMatch);
       }
 
       await SportEventModel.insertMany(parsedSchedule);
     } catch (error) {
       console.log(error);
+
+      throw error;
     }
   }
 }

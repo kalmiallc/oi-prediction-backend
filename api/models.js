@@ -10,18 +10,18 @@ const sportEventModel = new mongoose.Schema({
   endTime: { type: Number, required: true },
   gender: { type: String, required: true },
   genderByIndex: { type: Number, required: true },
-  group: { type: String, required: false },
+  group: { type: String, required: true },
   sport: { type: String, required: true },
   sportByIndex: { type: Number, required: true },
-  uid: { type: String, required: false, unique: true },
+  uid: { type: String, required: false, unique: true, sparse: true },
   match: { type: String, required: true },
   teams: [
-    { type: String, required: true }
+    { type: String, required: false, default: [] }
   ],
-  choices: [
+  choices:[
     {
-      choice: { type: String, required: true },
-      initialBet: { type: Number, required: true }
+      choice: { type: String, required: false },
+      initialBet: { type: Number, required: false }
     }
   ],
   initialPool: { type: Number, required: true },
