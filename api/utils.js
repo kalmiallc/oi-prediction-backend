@@ -4,7 +4,7 @@ import { Gender } from './types.js';
 import { ethers } from "ethers";
 
 /**
- * 
+ * Creates event UID.
  * @param {*} sportIndex 
  * @param {*} genderIndex 
  * @param {*} startTime 
@@ -14,9 +14,12 @@ import { ethers } from "ethers";
 export function createUid(sportIndex, genderIndex, startTime, teams) {
   try {
     const teamsString = teams.join(',');
-    const itemsKeccak = ethers.solidityPackedKeccak256(
-      ['uint32', 'uint8', 'uint256', 'string'],
-      [ sportIndex, genderIndex, startTime, teamsString ]
+    const abiCoder = ethers.AbiCoder.defaultAbiCoder();
+    const itemsKeccak = ethers.keccak256(
+      abiCoder.encode(
+        ['uint32', 'uint8', 'uint256', 'string'],
+        [ sportIndex, genderIndex, startTime, teamsString ]
+      )
     );
 
     return itemsKeccak;
@@ -30,18 +33,18 @@ export function createUid(sportIndex, genderIndex, startTime, teams) {
 }
 
 /**
- * 
- * @param {*} sport 
- * @returns 
+ * Returns sport index.
+ * @param {*} sport Sport.
+ * @returns Sport index.
  */
 export function getSportIndex(sport) {
   return Object.keys(Sports).indexOf(sport);
 }
 
 /**
- * 
- * @param {*} gender 
- * @returns 
+ * Returns gender index.
+ * @param {*} gender Gender.
+ * @returns Gender index.
  */
 export function getGenderByIndex(gender) {
   return Object.keys(Gender).indexOf(gender);
