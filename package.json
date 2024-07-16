@@ -8,6 +8,7 @@
 		"import": "node ./scripts/update-db.js",
 		"parseResults": "node ./scripts/parse-results.js",
 		"parseEvents": "node ./scripts/parse-events.js",
+		"testAddressValidity": "node ./scripts/test-address-validity.js",
 		"updateEvents": "node ./scripts/update-events.js"
 	},
 	"keywords": [],
@@ -20,6 +21,7 @@
 		"express": "^4.18.2",
 		"express-http-proxy": "^2.0.0",
 		"mongoose": "^8.4.4",
+		"@flarenetwork/flare-periphery-contract-artifacts": "0.1.16",
 		"serpapi": "^2.1.0"
 	},
 	"devDependencies": {
