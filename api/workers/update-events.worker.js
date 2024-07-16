@@ -7,7 +7,7 @@ import Sports from "../types.js";
 import { createUid } from "../utils.js";
 
 /**
- * Parses events.
+ * Updates events.
  */
 export async function updateEvents() {
   const buildId = await getBuildId();

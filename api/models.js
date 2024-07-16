@@ -26,7 +26,8 @@ const sportEventModel = new mongoose.Schema({
   ],
   initialPool: { type: Number, required: true },
   winner: { type: Number, required: false, default: null },
-  _externalId: { type: String, required: false }
+  _externalId: { type: String, required: false },
+  result: {}
 });
 
 const SportEventModel = mongoose.model('SportEvent', sportEventModel, 'sportEvents');

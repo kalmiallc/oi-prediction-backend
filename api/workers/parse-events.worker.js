@@ -107,7 +107,10 @@ export async function parseEvents() {
     const url = EVENTS_URL(sportEncoding, buildId)
     try {
       let res = await fetch(url);
-      res = await res.json();
+      console.log(url)
+      console.log(res.status)
+      console.log(res.statusText)
+      // res = await res.json();
 
       let schedule = [];
       const scheduleWrapper = res.pageProps.page.items.find(i => i.name === 'scheduleWrapper');
