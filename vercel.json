@@ -5,10 +5,10 @@
     "api/index.js": {
       "maxDuration": 60
     },
-    "api/workers/update-events.worker": {
+    "api/workers/update-events.worker.js": {
       "maxDuration": 60
     },
-    "api/workers/update-events-results.worker": {
+    "api/workers/update-events-results.worker.js": {
       "maxDuration": 60
     }
   },
