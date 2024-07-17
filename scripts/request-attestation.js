@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
-import ConnectDB from "../api/db.js";
-import { requestAttestation } from "../api/attestation.js";
+import ConnectDB from "../lib/db.js";
+import { requestAttestation } from "../lib/attestation.js";
 dotenv.config();
 
 (async () => {

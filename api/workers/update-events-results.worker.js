@@ -4,9 +4,9 @@
 import JSON5 from 'json5';
 import moment from 'moment';
 import OpenAI from 'openai';
-import googleIt from "../google-it.js";
-import SportEventModel from "../models.js";
-import { sendSlackWebhook } from '../slack-webhook.js';
+import googleIt from "../../lib/google-it.js";
+import SportEventModel from "../../lib/models.js";
+import { sendSlackWebhook } from '../../lib/slack-webhook.js';
 
 /**
  * Update results after this period of hours.

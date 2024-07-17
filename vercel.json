@@ -8,7 +8,11 @@
   },
   "crons": [
     {
-      "path": "/api/worker",
+      "path": "/api/workers/update-events.worker",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/workers/update-events-results.worker",
       "schedule": "0 0 * * *"
     }
   ]

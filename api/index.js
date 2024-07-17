@@ -7,8 +7,8 @@ import {
   getEventByUid,
   getEventsByFilter,
   getWinnerForEvent,
-} from "./controllers.js";
-import ConnectDB from "./db.js";
+} from "../lib/controllers.js";
+import ConnectDB from "../lib/db.js";
 import parseResults from "./result-parser.js";
 
 
