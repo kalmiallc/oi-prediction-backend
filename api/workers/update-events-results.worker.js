@@ -82,7 +82,7 @@ export async function updateEventsResults() {
         // 'proxy': 'http://localhost:8118' // Maybe add proxy?
       };
   
-      const results = await googleIt({ options, query: `${teams.join(' vs ')} olympics 2020 ${sport}`, limit: 10, disableConsole: true, gl: 'de' })
+      const results = await googleIt({ options, query: `${teams.join(' vs ')} olympics 2024 ${sport}`, limit: 10, disableConsole: true })
       for (const result of results) {
         const article = {
           title: result.title,
