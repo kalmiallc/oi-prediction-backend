@@ -1,14 +1,31 @@
-async function requestAttestation(uid, sport, gender, date, teams) {
+import SportEventModel from "./models.js";
+
+/**
+ * Requests attestation.
+ * @param {*} uid Event UID.
+ */
+async function requestAttestation(uid) {
+  if (!uid) {
+    throw new Error('No UID provided!')
+  }
+
   const [
     ATTESTATION_PROVIDER_URL,
     ATTESTATION_PROVIDER_API_KEY,
-    ethers,
-    flare,
+    _ethers,
+    _flare,
     utils,
     provider,
-    signer,
-    stateConnector
-  ] = setup();
+    _signer,
+    stateConnector,
+    network
+  ] = await setup();
+
+
+  const event = await SportEventModel.findOne({ uid });
+  if (!event || !event.id) {
+    throw new Error('Desired event does not exits!')
+  }
 
   const VERIFICATION_ENDPOINT =
     `${ATTESTATION_PROVIDER_URL}/verifier/${network.toLowerCase()}` +
@@ -20,10 +37,10 @@ async function requestAttestation(uid, sport, gender, date, teams) {
     attestationType: encodeAttestationName("MatchResult"),
     sourceId: encodeAttestationName(`testMatchResult`),
     requestBody: {
-      sport, 
-      gender, 
-      date, 
-      teams
+      sport: event.sportByIndex, 
+      gender: event.genderByIndex,
+      date: event.startTime,
+      teams: event.teams.join(',')
     },
   };
   console.log(
@@ -66,31 +83,39 @@ async function requestAttestation(uid, sport, gender, date, teams) {
     (BigInt(block.timestamp) - roundOffset) / roundDuration
   );
 
-  // save encodedAttestationRequest to DB
-  // save attestation submit time to DB
-  // save roundOffset to DB
-  // save roundDuration to DB
-  // save submissionRoundID to DB
+  event.attestationData.encodedAttestationRequest = encodedAttestationRequest;
+  event.attestationData.attestationSubmitTime = 0; // TODO: Where to obtain this.
+  event.attestationData.roundOffset = roundOffset;
+  event.attestationData.roundDuration = roundDuration;
+  event.attestationData.submissionRoundID = submissionRoundID;
+  await event.save();
 
-  console.log("Attestation submitted in round", submissionRoundID);
+  console.log("Attestation submitted in round: ", submissionRoundID);
 }
 
 async function getAttestationResult(uid) {
+  if (!uid) {
+    throw new Error('No UID provided!')
+  }
+
   const [
-    ATTESTATION_PROVIDER_URL,
+    _ATTESTATION_PROVIDER_URL,
     ATTESTATION_PROVIDER_API_KEY,
     ethers,
     flare,
-    utils,
-    provider,
+    _utils,
+    _provider,
     signer,
     stateConnector
-  ] = setup();
+  ] = await setup();
 
-  // Load encodedAttestationRequest from DB
-  // Load submissionRoundID from DB
-  const encodedAttestationRequest = {};
-  const submissionRoundID = 0;
+  const event = await SportEventModel.findOne({ uid });
+  if (!event || !event.id) {
+    throw new Error('Desired event does not exits!')
+  }
+
+  const encodedAttestationRequest = event.attestationData.encodedAttestationRequest;
+  const submissionRoundID = event.attestationData.submissionRoundID;
 
   const lastFinalizedRoundID = Number(
     await stateConnector.lastFinalizedRoundId()
@@ -160,36 +185,43 @@ async function getAttestationResult(uid) {
   }
 
   // Save fullProof to DB
+  event.attestationData.fullProof = fullProof;
+  await event.save();
+
   // Perform finalizeMatch call to betting contract to set winner
   // Perform finalizeMatch call to betting contract to set winner
   // Perform finalizeMatch call to betting contract to set winner
 }
 
+/**
+ * Attestation setup function.
+ */
 async function setup() {
   const FLARE_CONTRACTS = "@flarenetwork/flare-periphery-contract-artifacts";
-  const FLARE_RPC = ""; // load from env
-  const ATTESTATION_PROVIDER_URL = ""; // load from env
-  const ATTESTATION_PROVIDER_API_KEY = ""; // load from env
-  const FLARE_CONTRACT_REGISTRY_ADDR = ""; // load from env
-  const PRIVATE_KEY = ""; // load from env
+  const FLARE_RPC = process.env.FLARE_RPC;
+  const ATTESTATION_PROVIDER_URL = process.env.ATTESTATION_PROVIDER_URL;
+  const ATTESTATION_PROVIDER_API_KEY = process.env.ATTESTATION_PROVIDER_API_KEY;
+  const FLARE_CONTRACT_REGISTRY_ADDR = process.env.FLARE_CONTRACT_REGISTRY_ADDR;
+  const ATTESTATION_PRIVATE_KEY = process.env.ATTESTATION_PRIVATE_KEY;
+  const network = "btc";
 
-  // Set up
+  // Set up.
   const ethers = await import("ethers");
   const flare = await import(FLARE_CONTRACTS);
   const utils = await import(
     `${FLARE_CONTRACTS}/dist/coston/StateConnector/libs/ts/utils.js`
   );
   const provider = new ethers.JsonRpcProvider(FLARE_RPC);
-  const signer = new ethers.Wallet(PRIVATE_KEY, provider);
+  const signer = new ethers.Wallet(ATTESTATION_PRIVATE_KEY, provider);
 
-  // Access Contract Registry
+  // Access Contract Registry.
   const flareContractRegistry = new ethers.Contract(
     FLARE_CONTRACT_REGISTRY_ADDR,
     flare.nameToAbi("FlareContractRegistry", "coston").data,
     provider
   );
 
-  // Retrieve the State Connector Contract Address
+  // Retrieve the State Connector Contract Address.
   const stateConnectorAddress =
     await flareContractRegistry.getContractAddressByName("StateConnector");
   const stateConnector = new ethers.Contract(
@@ -206,7 +238,8 @@ async function setup() {
     utils,
     provider,
     signer,
-    stateConnector
+    stateConnector,
+    network
   ]
 }
 

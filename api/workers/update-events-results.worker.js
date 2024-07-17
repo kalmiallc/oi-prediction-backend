@@ -5,7 +5,6 @@ import SportEventModel from "../models.js";
 import { EVENTS_URL, getBuildId, PARSE_SPORTS, UrlSportEncoding } from "../events-scrapping.js";
 import Sports from "../types.js";
 import { createUid } from "../utils.js";
-
 import { getJson } from "serpapi";
 
 
@@ -21,27 +20,28 @@ const END_PERIOD_HOURS = 2;
  */
 export async function updateEventsResults() {
   try {
-    const endPeriodAgoInSeconds = Math.floor(Date.now() / 1000) - END_PERIOD_HOURS * 60 * 60;
-    const events = await SportEventModel.find({ endTime: { $lte: endPeriodAgoInSeconds }, uid: { $ne: null } });
-    if (!events.length) {
-      console.log('No events found.')
-      return;
-    }
+    // const endPeriodAgoInSeconds = Math.floor(Date.now() / 1000) - END_PERIOD_HOURS * 60 * 60;
+    // const events = await SportEventModel.find({ endTime: { $lte: endPeriodAgoInSeconds }, uid: { $ne: null } });
+    // if (!events.length) {
+    //   console.log('No events found.')
+    //   return;
+    // }
 
-    for (const event of events) {
+    // for (const event of events) {
       const response = await getJson({
         engine: "google",
-        api_key: API_KEY,
-        q: "coffee",
-        location: "Austin, Texas",
+        api_key: process.env.SERPAPI_API_KEY,
+        q: "Slovenia vs England euro 2024"
       });
-    }
+
+      console.log(JSON.stringify(response.sports_results, null, 2))
+    // }
 
 
 
 
   } catch(error) {
-    console.lof('Error while updating event results: ')
+    console.log('Error while updating event results: ')
     console.log(error);
   }
 }
