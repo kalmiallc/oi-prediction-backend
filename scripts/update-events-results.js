@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import ConnectDB from "../api/db.js";
+import ConnectDB from "../lib/db.js";
 import { updateEventsResults } from "../api/workers/update-events-results.worker.js";
 dotenv.config();
 

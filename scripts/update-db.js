@@ -1,10 +1,10 @@
 import * as dotenv from "dotenv";
-
 import jsonData from "../eventData.json" assert { type: "json" };
-import SportEventModel from "./../api/models.js";
-import ConnectDB from "../api/db.js";
-import { createUid, getGenderByIndex } from "../api/utils.js";
-import { getSportIndex } from "../api/utils.js";
+import SportEventModel from "../lib/models.js";
+import ConnectDB from "../lib/db.js";
+import { createUid, getGenderByIndex } from "../lib/utils.js";
+import { getSportIndex } from "../lib/utils.js";
+
 dotenv.config();
 
 (async () => {
@@ -12,6 +12,7 @@ dotenv.config();
   await SportEventModel.deleteMany({});
   const updateData = convertAndAddTimes(jsonData);
   await SportEventModel.insertMany(updateData);
+
   console.log("Data imported successfully!");
   process.exit(0);
 })().catch(async (err) => {

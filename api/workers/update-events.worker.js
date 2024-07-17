@@ -1,10 +1,12 @@
 
 
 
-import SportEventModel from "../../api/models.js";
-import { EVENTS_URL, getBuildId, PARSE_SPORTS, UrlSportEncoding } from "../events-scrapping.js";
-import Sports from "../types.js";
-import { createUid } from "../utils.js";
+import dotenv from 'dotenv';
+import ConnectDB from "../../lib/db.js";
+import { EVENTS_URL, getBuildId, PARSE_SPORTS, UrlSportEncoding } from "../../lib/events-scrapping.js";
+import SportEventModel from "../../lib/models.js";
+import Sports from "../../lib/types.js";
+import { createUid } from "../../lib/utils.js";
 
 /**
  * Updates events.
@@ -93,7 +95,10 @@ export async function updateEvents() {
  * @param {*} req Request.
  * @param {*} res Response.
  */
-export default function handler(req, res) {
+export default async function handler(req, res) {
+  dotenv.config();
+  await ConnectDB();
+
   updateEvents()
     .then(() => {
       res.send({ ok: true });

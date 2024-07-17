@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
-import ConnectDB from "../api/db.js";
+import ConnectDB from "../lib/db.js";
 import { parseEvents } from "../api/workers/parse-events.worker.js";
+
 dotenv.config();
 
 (async () => {

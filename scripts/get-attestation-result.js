@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import { getAttestationResult } from "../api/attestation.js";
+import { getAttestationResult } from "../lib/attestation.js";
 dotenv.config();
 
 (async () => {

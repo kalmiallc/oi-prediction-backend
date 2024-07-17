@@ -1,9 +1,11 @@
 
 
 
+import dotenv from 'dotenv';
 import JSON5 from 'json5';
 import moment from 'moment';
 import OpenAI from 'openai';
+import ConnectDB from "../../lib/db.js";
 import googleIt from "../../lib/google-it.js";
 import SportEventModel from "../../lib/models.js";
 import { sendSlackWebhook } from '../../lib/slack-webhook.js';
@@ -234,7 +236,10 @@ export async function updateEventsResults() {
  * @param {*} req Request.
  * @param {*} res Response.
  */
-export default function handler(req, res) {
+export default async function handler(req, res) {
+  dotenv.config();
+  await ConnectDB();
+  
   updateEventsResults()
     .then(() => {
       res.send({ ok: true });

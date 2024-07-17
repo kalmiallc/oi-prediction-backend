@@ -1,11 +1,12 @@
 
 
 
-import SportEventModel from "../../api/models.js";
-import { createUid, getGenderByIndex, getSportIndex } from "../../api/utils.js";
-import { EVENTS_URL, getBuildId, PARSE_SPORTS, UrlSportEncoding } from "../events-scrapping.js";
-import Sports from "../types.js";
-
+import dotenv from 'dotenv';
+import ConnectDB from "../../lib/db.js";
+import { EVENTS_URL, getBuildId, PARSE_SPORTS, UrlSportEncoding } from "../../lib/events-scrapping.js";
+import SportEventModel from "../../lib/models.js";
+import Sports from "../../lib/types.js";
+import { createUid, getGenderByIndex, getSportIndex } from "../../lib/utils.js";
 
 /**
  * Parses gender out of event description.
@@ -201,7 +202,10 @@ export async function parseEvents() {
  * @param {*} req Request.
  * @param {*} res Response.
  */
-export default function handler(req, res) {
+export default async function handler(req, res) {
+  dotenv.config();
+  await ConnectDB();
+
   parseEvents()
     .then(() => {
       res.send({ ok: true });

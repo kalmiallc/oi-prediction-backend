@@ -1,5 +1,6 @@
 import * as dotenv from "dotenv";
-import runAddressValidity from "../api/address-validity.js";
+import runAddressValidity from "../lib/address-validity.js";
+
 dotenv.config();
 
 (async () => {
