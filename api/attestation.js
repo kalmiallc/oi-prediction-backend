@@ -93,6 +93,11 @@ async function requestAttestation(uid) {
   console.log("Attestation submitted in round: ", submissionRoundID);
 }
 
+/**
+ * 
+ * @param {*} uid 
+ * @returns 
+ */
 async function getAttestationResult(uid) {
   if (!uid) {
     throw new Error('No UID provided!')
