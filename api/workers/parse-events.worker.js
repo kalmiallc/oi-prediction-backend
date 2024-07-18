@@ -1,14 +1,11 @@
-
-
-
 import dotenv from 'dotenv';
 import ConnectDB from "../../lib/db.js";
 import { PARSE_SPORTS } from "../../lib/events-scrapping.js";
 import SportEventModel from "../../lib/models.js";
+import { getSchedule } from '../../lib/olympics-api.js';
 import { Sports } from "../../lib/types.js";
-import { createUid, getGenderByIndex, getSportIndex } from "../../lib/utils.js";
-import { getSchedule } from '../../lib/olympics-api.js'
-
+import { addEvent } from "../../lib/blockchain.js";
+import { createUid, getGenderByIndex, getSportIndex, sleep } from "../../lib/utils.js";
 
 /**
  * Parses gender out of event description.
@@ -101,6 +98,10 @@ function dateToUtc(dateString) {
    return utcDateTime;
 }
 
+function includesWinnerOrLooser(team1, team2) {
+  return team1.toLowerCase().includes('winner') || team1.toLowerCase().includes('loser') || team2.toLowerCase().includes('winner') || team2.toLowerCase().includes('loser');
+}
+
 /**
  * Parses events.
  */
@@ -109,7 +110,6 @@ export async function parseEvents() {
   for (const sport of sports) {
     try {
       const schedule = await getSchedule(sport);
-      console.log(JSON.stringify(schedule, null, 2))
       const parsedSchedule = [];
       for (const match of schedule) {
         const parsedDate = new Date(match.startDate).toISOString().split('T');
@@ -119,24 +119,29 @@ export async function parseEvents() {
         let matchName = match.eventUnitName;
 
         if (match.competitors.length && match.competitors[0] && match.competitors[1]) {
-          teams.push(match.competitors[0].name);
-          teams.push(match.competitors[1].name);
-          matchName += ` - ${teams.join(' vs ')}`;
+          const team1 = match.competitors[0].name;
+          const team2 = match.competitors[1].name;
 
-          choices.push({
-            choice: teams[0],
-            initialBet: 10
-          });
-          choices.push({
-            choice: teams[1],
-            initialBet: 10
-          });
+          if (!includesWinnerOrLooser(team1, team2)) {
+            teams.push(team1);
+            teams.push(team2);
+            matchName += ` - ${teams.join(' vs ')}`;
 
-          if (canBeTied(sport, match.eventUnitName, teams)) {
             choices.push({
-              choice: 'DRAW',
+              choice: teams[0],
               initialBet: 10
             });
+            choices.push({
+              choice: teams[1],
+              initialBet: 10
+            });
+
+            if (canBeTied(sport, match.eventUnitName, teams)) {
+              choices.push({
+                choice: 'DRAW',
+                initialBet: 10
+              });
+            }
           }
         }
 
@@ -167,19 +172,44 @@ export async function parseEvents() {
           choices,
           uid,
           match: matchName,
-          initialPool: 60,
+          initialPool: process.env.BET_INITIAL_POOL || 60,
           winner: null,
           _externalId: match.id
         };
   
         parsedSchedule.push(parsedMatch);
       }
-      console.log(parsedSchedule)
-      // await SportEventModel.insertMany(parsedSchedule);
+      await SportEventModel.insertMany(parsedSchedule);
     } catch (error) {
       console.log(error);
 
       throw error;
+    }
+  }
+}
+
+/**
+ * Adds all parsed events to contract.
+ */
+export async function addEventsToContract() {
+  const events = await SportEventModel.find({ uid: { $ne: null } });
+
+  let idx = 0;
+  while (idx !== events.length) {
+    const event = events[idx]
+    try {
+      await addEvent(event.uid);
+      idx++;
+    } catch (error) {
+      console.log(error);
+
+      if (error.message.includes('nonce has already been used')) {
+        console.log('Sleeping for 5 seconds...')
+        await sleep(5000);
+        continue;
+      } else {
+        break;
+      }
     }
   }
 }
@@ -193,11 +223,14 @@ export default async function handler(req, res) {
   dotenv.config();
   await ConnectDB();
 
-  parseEvents()
-    .then(() => {
-      res.send({ ok: true });
-    })
-    .catch((err) => {
-      res.status(500).send({ ok: false, error: err });
-    });
+  try {
+    await parseEvents();
+    await addEventsToContract();
+
+    res.send({ ok: true });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).send({ ok: false, error });
+  }
 }
