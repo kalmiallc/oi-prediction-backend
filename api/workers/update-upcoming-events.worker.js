@@ -9,7 +9,7 @@ import SportEventModel from "../../lib/models.js";
 import { getSchedule } from '../../lib/olympics-api.js';
 import { sendSlackWebhook } from '../../lib/slack-webhook.js';
 import { Sports } from "../../lib/types.js";
-import { createUid, includesWinnerOrLooser } from "../../lib/utils.js";
+import { createUid, dateToUtc, includesWinnerOrLooser } from "../../lib/utils.js";
 
 /**
  * Updates events.
@@ -95,7 +95,7 @@ export async function updateEvents() {
             } catch (error) {
               await sendSlackWebhook(
                 `
-                Error while adding event to contract. Event is saved in database: \n
+                Error while adding updated event to contract. Event is saved in database: \n
                 - UID: \`${event.uid}\`\n
                 - ID: \`${event.id}\`\n
                 - Error: \`${error.message}\`\n
@@ -104,13 +104,13 @@ export async function updateEvents() {
               );
             }
 
-            console.log('Event updated: ', + event._externalId);
+            console.log('Event updated: ', event._externalId);
           }
         } else {
-          console.log('Event not updated: ' + event._externalId);
+          console.log('Event not updated: ', event._externalId);
         }
       } else {
-        console.log('Event not updated: ' + event._externalId);
+        console.log('Event not updated: ', event._externalId);
       }
     }
   }

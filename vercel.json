@@ -15,7 +15,7 @@
   "crons": [
     {
       "path": "/api/workers/update-upcoming-events.worker",
-      "schedule": "*/10 * * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/workers/update-events-results.worker",
