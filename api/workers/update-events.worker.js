@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import ConnectDB from "../../lib/db.js";
 import { EVENTS_URL, getBuildId, PARSE_SPORTS, UrlSportEncoding } from "../../lib/events-scrapping.js";
 import SportEventModel from "../../lib/models.js";
-import Sports from "../../lib/types.js";
+import { Sports } from "../../lib/types.js";
 import { createUid } from "../../lib/utils.js";
 
 /**

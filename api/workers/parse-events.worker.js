@@ -3,17 +3,19 @@
 
 import dotenv from 'dotenv';
 import ConnectDB from "../../lib/db.js";
-import { EVENTS_URL, getBuildId, PARSE_SPORTS, UrlSportEncoding } from "../../lib/events-scrapping.js";
+import { PARSE_SPORTS } from "../../lib/events-scrapping.js";
 import SportEventModel from "../../lib/models.js";
-import Sports from "../../lib/types.js";
+import { Sports } from "../../lib/types.js";
 import { createUid, getGenderByIndex, getSportIndex } from "../../lib/utils.js";
+import { getSchedule } from '../../lib/olympics-api.js'
+
 
 /**
  * Parses gender out of event description.
  * @param {*} eventString Event string.
  * @returns Parsed gender.
  */
-function getGender(eventString) {
+function getGenderFromDescription(eventString) {
   let regex = /(Men|Women|Mixed)/;
   let match = eventString.match(regex);
 
@@ -92,48 +94,33 @@ function getGroup(eventString) {
   return match ? match[0] : 'None';
 }
 
+function dateToUtc(dateString) {
+   const date = new Date(dateString);
+   const utcDateTime = date.toISOString();
+
+   return utcDateTime;
+}
+
 /**
  * Parses events.
  */
 export async function parseEvents() {
-  const buildId = await getBuildId();
-  if (!buildId) {
-    throw new Error('No build ID found.')
-  }
-
   const sports = Object.keys(Sports).filter(key => PARSE_SPORTS.includes(Sports[key]));
   for (const sport of sports) {
-    const sportEncoding = UrlSportEncoding[sport];
-
-    const url = EVENTS_URL(sportEncoding, buildId)
     try {
-      let res = await fetch(url);
-      console.log(url)
-      console.log(res.status)
-      console.log(res.statusText)
-      // res = await res.json();
-
-      let schedule = [];
-      const scheduleWrapper = res.pageProps.page.items.find(i => i.name === 'scheduleWrapper');
-      if (scheduleWrapper) {
-        const units = scheduleWrapper.data.schedules;
-
-        for (const unit of units) {
-          schedule = [...schedule, ...unit.units];
-        }
-      }
-
+      const schedule = await getSchedule(sport);
+      console.log(JSON.stringify(schedule, null, 2))
       const parsedSchedule = [];
       for (const match of schedule) {
-        const parsedDate = new Date(match.startDateTimeUtc).toISOString().split('T');
+        const parsedDate = new Date(match.startDate).toISOString().split('T');
 
         const teams = [];
         const choices = [];
-        let matchName = match.description;
+        let matchName = match.eventUnitName;
 
-        if (match.match?.team1 && match.match?.team2) {
-          teams.push(match.match.team1.description);
-          teams.push(match.match.team2.description);
+        if (match.competitors.length && match.competitors[0] && match.competitors[1]) {
+          teams.push(match.competitors[0].name);
+          teams.push(match.competitors[1].name);
           matchName += ` - ${teams.join(' vs ')}`;
 
           choices.push({
@@ -145,7 +132,7 @@ export async function parseEvents() {
             initialBet: 10
           });
 
-          if (canBeTied(sport, match.description, teams)) {
+          if (canBeTied(sport, match.eventUnitName, teams)) {
             choices.push({
               choice: 'DRAW',
               initialBet: 10
@@ -153,12 +140,12 @@ export async function parseEvents() {
           }
         }
 
-        const gender = getGender(match.description);
-        const startTimeEpoch = new Date(match.startDateTimeUtc).getTime() / 1000;
-        const endTimeEpoch = new Date(match.endDateTimeUtc).getTime() / 1000;
+        const gender = getGenderFromDescription(match.eventUnitName);
+        const startTimeEpoch = new Date(dateToUtc(match.startDate)).getTime() / 1000;
+        const endTimeEpoch = new Date(dateToUtc(match.endDate)).getTime() / 1000;
         const sportIndex = getSportIndex(sport);
         const genderIndex = getGenderByIndex(gender);
-        const group = getGroup(match.description);
+        const group = getGroup(match.eventUnitName);
 
 
         let uid = undefined;
@@ -182,13 +169,13 @@ export async function parseEvents() {
           match: matchName,
           initialPool: 60,
           winner: null,
-          _externalId: match.unitCode
+          _externalId: match.id
         };
   
         parsedSchedule.push(parsedMatch);
       }
-
-      await SportEventModel.insertMany(parsedSchedule);
+      console.log(parsedSchedule)
+      // await SportEventModel.insertMany(parsedSchedule);
     } catch (error) {
       console.log(error);
 
