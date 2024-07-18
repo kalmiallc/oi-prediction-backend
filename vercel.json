@@ -19,7 +19,7 @@
     },
     {
       "path": "/api/workers/update-events-results.worker",
-      "schedule": "0 0 * * *"
+      "schedule": "*/30 * * * *"
     }
   ]
 }
