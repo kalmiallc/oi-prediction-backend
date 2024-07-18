@@ -1,11 +1,11 @@
 import dotenv from 'dotenv';
+import { addEvent } from "../../lib/blockchain.js";
 import ConnectDB from "../../lib/db.js";
 import { PARSE_SPORTS } from "../../lib/events-scrapping.js";
 import SportEventModel from "../../lib/models.js";
 import { getSchedule } from '../../lib/olympics-api.js';
 import { Sports } from "../../lib/types.js";
-import { addEvent } from "../../lib/blockchain.js";
-import { createUid, getGenderByIndex, getSportIndex, sleep } from "../../lib/utils.js";
+import { createUid, dateToUtc, getGenderByIndex, getSportIndex, includesWinnerOrLooser, sleep } from "../../lib/utils.js";
 
 /**
  * Parses gender out of event description.
@@ -89,17 +89,6 @@ function getGroup(eventString) {
   const regex = /\b(Group [A-Z]|Preliminary Round(?: - (?:Group|Pool) [A-Z])?|Preliminary Match|Pool [A-Z]|Pool Round|Group play stage|Quarter(?:-?finals?)?|Semi(?:-?finals?)?|Play-in Games|Round of 16|Bronze Medal (?:Game|Match)|Gold Medal (?:Game|Match)|Classification \d+(?:th)?-\d+(?:th)?)\b/i;
   const match = eventString.match(regex);
   return match ? match[0] : 'None';
-}
-
-function dateToUtc(dateString) {
-   const date = new Date(dateString);
-   const utcDateTime = date.toISOString();
-
-   return utcDateTime;
-}
-
-function includesWinnerOrLooser(team1, team2) {
-  return team1.toLowerCase().includes('winner') || team1.toLowerCase().includes('loser') || team2.toLowerCase().includes('winner') || team2.toLowerCase().includes('loser');
 }
 
 /**

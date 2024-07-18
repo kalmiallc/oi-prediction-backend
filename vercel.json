@@ -5,16 +5,16 @@
     "api/index.js": {
       "maxDuration": 60
     },
-    "api/workers/update-events.worker.js": {
-      "maxDuration": 60
+    "api/workers/update-upcoming-events.worker.js": {
+      "maxDuration": 300
     },
     "api/workers/update-events-results.worker.js": {
-      "maxDuration": 60
+      "maxDuration": 300
     }
   },
   "crons": [
     {
-      "path": "/api/workers/update-events.worker",
+      "path": "/api/workers/update-upcoming-events.worker",
       "schedule": "0 0 * * *"
     },
     {

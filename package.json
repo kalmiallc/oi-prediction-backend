@@ -9,7 +9,7 @@
 		"parseResults": "node ./scripts/parse-results.js",
 		"testAddressValidity": "node ./scripts/test-address-validity.js",
 		"parseEvents": "node ./scripts/parse-events.js",
-		"updateEvents": "node ./scripts/update-events.js",
+		"updateUpcomingEvents": "node ./scripts/update-upcoming-events.js",
 		"updateEventsResults": "node ./scripts/update-events-results.js",
 		"requestAttestation": "node ./scripts/request-attestation.js"
 	},
