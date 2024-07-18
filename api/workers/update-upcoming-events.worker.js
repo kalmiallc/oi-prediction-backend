@@ -2,10 +2,12 @@
 
 
 import dotenv from 'dotenv';
+import { addEvent } from '../../lib/blockchain.js';
 import ConnectDB from "../../lib/db.js";
 import { PARSE_SPORTS } from "../../lib/events-scrapping.js";
 import SportEventModel from "../../lib/models.js";
 import { getSchedule } from '../../lib/olympics-api.js';
+import { sendSlackWebhook } from '../../lib/slack-webhook.js';
 import { Sports } from "../../lib/types.js";
 import { createUid, includesWinnerOrLooser } from "../../lib/utils.js";
 
@@ -25,7 +27,15 @@ export async function updateEvents() {
       schedule = await getSchedule(sport);
     } catch (error) {
       console.log(error);
-      // TODO: send notification?
+
+      await sendSlackWebhook(
+        `
+        Error while schedule data for sport. Please check if API still works: \n
+        - Sport: \`${sport}\`\n
+        - Error: \`${error.message}\`\n
+        `,
+        true
+      );
 
       continue;
     }
@@ -49,10 +59,6 @@ export async function updateEvents() {
       if (scheduledEvent.competitors.length && scheduledEvent.competitors[0] && scheduledEvent.competitors[1]) {
         const team1 = scheduledEvent.competitors[0].name;
         const team2 = scheduledEvent.competitors[1].name;
-
-
-        console.log(team1)
-        console.log(team2)
 
         if (!includesWinnerOrLooser(team1, team2)) {
           teams.push(team1);
@@ -82,12 +88,29 @@ export async function updateEvents() {
             event.endTime = endTimeEpoch;
             event.date = parsedDate[0];
             event.time = parsedDate[1].substring(0,5);
-
             await event.save();
+
+            try {
+              await addEvent(event.uid);
+            } catch (error) {
+              await sendSlackWebhook(
+                `
+                Error while adding event to contract. Event is saved in database: \n
+                - UID: \`${event.uid}\`\n
+                - ID: \`${event.id}\`\n
+                - Error: \`${error.message}\`\n
+                `,
+                true
+              );
+            }
+
+            console.log('Event updated: ', + event._externalId);
           }
+        } else {
+          console.log('Event not updated: ' + event._externalId);
         }
       } else {
-        console.log('Event not updated.')
+        console.log('Event not updated: ' + event._externalId);
       }
     }
   }
