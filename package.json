@@ -11,7 +11,8 @@
 		"parseEvents": "node ./scripts/parse-events.js",
 		"updateUpcomingEvents": "node ./scripts/update-upcoming-events.js",
 		"updateEventsResults": "node ./scripts/update-events-results.js",
-		"requestAttestation": "node ./scripts/request-attestation.js"
+		"requestAttestation": "node ./scripts/request-attestation.js",
+		"getTeams": "node ./scripts/get-teams.js"
 	},
 	"keywords": [],
 	"author": "",

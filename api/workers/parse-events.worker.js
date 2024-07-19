@@ -5,7 +5,7 @@ import { PARSE_SPORTS } from "../../lib/events-scrapping.js";
 import SportEventModel from "../../lib/models.js";
 import { getSchedule } from '../../lib/olympics-api.js';
 import { Sports } from "../../lib/types.js";
-import { createUid, dateToUtc, getGenderByIndex, getGenderFromDescription, getSportIndex, includesWinnerOrLooser, sleep } from "../../lib/utils.js";
+import { createUid, dateToUtc, getGenderByIndex, getGenderFromDescription, getSportIndex, isTeamValid, sleep } from "../../lib/utils.js";
 
 
 /**
@@ -82,7 +82,7 @@ export function parseEvent(match, sport) {
     const team1 = match.competitors[0].name;
     const team2 = match.competitors[1].name;
 
-    if (!includesWinnerOrLooser(team1, team2)) {
+    if (isTeamValid(team1) && isTeamValid(team2)) {
       teams.push(team1);
       teams.push(team2);
       matchName += ` - ${teams.join(' vs ')}`;

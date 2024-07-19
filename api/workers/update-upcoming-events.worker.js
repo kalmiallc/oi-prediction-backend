@@ -9,7 +9,7 @@ import SportEventModel from "../../lib/models.js";
 import { getSchedule } from '../../lib/olympics-api.js';
 import { sendSlackWebhook } from '../../lib/slack-webhook.js';
 import { Sports } from "../../lib/types.js";
-import { createUid, dateToUtc, includesWinnerOrLooser } from "../../lib/utils.js";
+import { createUid, dateToUtc, isTeamValid } from "../../lib/utils.js";
 
 /**
  * Updates events.
@@ -69,7 +69,7 @@ export async function updateEvents() {
         const team1 = scheduledEvent.competitors[0].name;
         const team2 = scheduledEvent.competitors[1].name;
 
-        if (!includesWinnerOrLooser(team1, team2)) {
+        if (isTeamValid(team1) && isTeamValid(team2)) {
           teams.push(team1);
           teams.push(team2);
           matchName += ` - ${teams.join(' vs ')}`;
