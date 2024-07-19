@@ -30,7 +30,7 @@ export async function updateEvents() {
 
       await sendSlackWebhook(
         `
-        Error while schedule data for sport. Please check if API still works: \n
+        Error while getting schedule data for sport. Please check if API still works: \n
         - Sport: \`${sport}\`\n
         - Error: \`${error.message}\`\n
         `,
@@ -49,6 +49,15 @@ export async function updateEvents() {
       const scheduledEvent = schedule.find((s) => s.id === event._externalId);
       if (!scheduledEvent) {
         console.log('Event not found: ' + event.id);
+
+        await sendSlackWebhook(
+          `
+          Scrapped event not matched to any event in database: \n
+          - Event: ${JSON.stringify(scheduledEvent, null, w)}\n
+          `,
+          true
+        );
+
         continue;
       }
 

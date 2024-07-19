@@ -5,34 +5,8 @@ import { PARSE_SPORTS } from "../../lib/events-scrapping.js";
 import SportEventModel from "../../lib/models.js";
 import { getSchedule } from '../../lib/olympics-api.js';
 import { Sports } from "../../lib/types.js";
-import { createUid, dateToUtc, getGenderByIndex, getSportIndex, includesWinnerOrLooser, sleep } from "../../lib/utils.js";
+import { createUid, dateToUtc, getGenderByIndex, getGenderFromDescription, getSportIndex, includesWinnerOrLooser, sleep } from "../../lib/utils.js";
 
-/**
- * Parses gender out of event description.
- * @param {*} eventString Event string.
- * @returns Parsed gender.
- */
-function getGenderFromDescription(eventString) {
-  let regex = /(Men|Women|Mixed)/;
-  let match = eventString.match(regex);
-
-  if (!match || !match[0]) {
-    regex = /(WS|WD|MS|MD|XD)/;
-
-    match = eventString.match(regex);
-    if (match && match[0]) {
-      if (match[0] === 'WS' || match[0] === 'WD') {
-        return 'Women';
-      } else if(match[0] === 'XD') {
-        return 'Mixed';
-      }else {
-        return 'Men';
-      }
-    }
-  }
-
-  return match ? match[0] : null;
-}
 
 /**
  * Checks if certain sports event can be tied.
@@ -92,6 +66,79 @@ function getGroup(eventString) {
 }
 
 /**
+ * Pareses event from obtained match data.
+ * @param {*} match Match data.
+ * @param {*} sport Sport.
+ * @returns Parsed event.
+ */
+export function parseEvent(match, sport) {
+  const parsedDate = new Date(match.startDate).toISOString().split('T');
+
+  const teams = [];
+  const choices = [];
+  let matchName = match.eventUnitName;
+
+  if (match.competitors.length && match.competitors[0] && match.competitors[1]) {
+    const team1 = match.competitors[0].name;
+    const team2 = match.competitors[1].name;
+
+    if (!includesWinnerOrLooser(team1, team2)) {
+      teams.push(team1);
+      teams.push(team2);
+      matchName += ` - ${teams.join(' vs ')}`;
+
+      choices.push({
+        choice: teams[0],
+        initialBet: 10
+      });
+      choices.push({
+        choice: teams[1],
+        initialBet: 10
+      });
+
+      if (canBeTied(sport, match.eventUnitName, teams)) {
+        choices.push({
+          choice: 'DRAW',
+          initialBet: 10
+        });
+      }
+    }
+  }
+
+  const gender = getGenderFromDescription(match.eventUnitName);
+  const startTimeEpoch = new Date(dateToUtc(match.startDate)).getTime() / 1000;
+  const endTimeEpoch = new Date(dateToUtc(match.endDate)).getTime() / 1000;
+  const sportIndex = getSportIndex(sport);
+  const genderIndex = getGenderByIndex(gender);
+  const group = getGroup(match.eventUnitName);
+
+
+  let uid = undefined;
+  if (teams.length >= 2 && choices.length >= 2) {
+    uid = createUid(sportIndex, genderIndex, startTimeEpoch, teams);
+  }
+
+  return {
+    date: parsedDate[0],
+    time: parsedDate[1].substring(0,5),
+    gender: gender,
+    startTime: startTimeEpoch,
+    endTime: endTimeEpoch,
+    genderByIndex: genderIndex,
+    group,
+    sport: Sports[sport],
+    sportByIndex: sportIndex,
+    teams,
+    choices,
+    uid,
+    match: matchName,
+    initialPool: process.env.BET_INITIAL_POOL || 60,
+    winner: null,
+    _externalId: match.id
+  };
+}
+
+/**
  * Parses events.
  */
 export async function parseEvents() {
@@ -101,71 +148,7 @@ export async function parseEvents() {
       const schedule = await getSchedule(sport);
       const parsedSchedule = [];
       for (const match of schedule) {
-        const parsedDate = new Date(match.startDate).toISOString().split('T');
-
-        const teams = [];
-        const choices = [];
-        let matchName = match.eventUnitName;
-
-        if (match.competitors.length && match.competitors[0] && match.competitors[1]) {
-          const team1 = match.competitors[0].name;
-          const team2 = match.competitors[1].name;
-
-          if (!includesWinnerOrLooser(team1, team2)) {
-            teams.push(team1);
-            teams.push(team2);
-            matchName += ` - ${teams.join(' vs ')}`;
-
-            choices.push({
-              choice: teams[0],
-              initialBet: 10
-            });
-            choices.push({
-              choice: teams[1],
-              initialBet: 10
-            });
-
-            if (canBeTied(sport, match.eventUnitName, teams)) {
-              choices.push({
-                choice: 'DRAW',
-                initialBet: 10
-              });
-            }
-          }
-        }
-
-        const gender = getGenderFromDescription(match.eventUnitName);
-        const startTimeEpoch = new Date(dateToUtc(match.startDate)).getTime() / 1000;
-        const endTimeEpoch = new Date(dateToUtc(match.endDate)).getTime() / 1000;
-        const sportIndex = getSportIndex(sport);
-        const genderIndex = getGenderByIndex(gender);
-        const group = getGroup(match.eventUnitName);
-
-
-        let uid = undefined;
-        if (teams.length >= 2 && choices.length >= 2) {
-          uid = createUid(sportIndex, genderIndex, startTimeEpoch, teams);
-        }
-
-        const parsedMatch = {
-          date: parsedDate[0],
-          time: parsedDate[1].substring(0,5),
-          gender: gender,
-          startTime: startTimeEpoch,
-          endTime: endTimeEpoch,
-          genderByIndex: genderIndex,
-          group,
-          sport: Sports[sport],
-          sportByIndex: sportIndex,
-          teams,
-          choices,
-          uid,
-          match: matchName,
-          initialPool: process.env.BET_INITIAL_POOL || 60,
-          winner: null,
-          _externalId: match.id
-        };
-  
+        const parsedMatch = parseEvent(match, sport);
         parsedSchedule.push(parsedMatch);
       }
       await SportEventModel.insertMany(parsedSchedule);

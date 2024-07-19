@@ -220,7 +220,7 @@ export async function updateEventsResults() {
         - UID: \`${event.uid}\`\n
         - Teams: \`${event.teams.join(' vs ')}\`\n
         - Sport: \`${event.sport}\`\n
-        - Results: \`${JSON.stringify(results, null, 2)}\`\n
+        - Results: ${JSON.stringify(results, null, 2)}\n
         `,
         true
       );
