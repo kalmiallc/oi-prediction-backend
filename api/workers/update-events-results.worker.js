@@ -45,8 +45,6 @@ function parseWinner(result, teams) {
   return null;
 }
 
-// 
-
 /**
  * Updates events results.
  */
