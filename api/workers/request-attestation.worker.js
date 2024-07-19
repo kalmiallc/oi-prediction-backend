@@ -7,7 +7,7 @@ import { requestAttestation } from '../../lib/attestation.js';
 /**
  * Updates events results.
  */
-export async function requestAttestations() {
+export async function requestEventAttestations() {
   const events = await SportEventModel.find({
     uid: { $ne: null },
     winner: { $ne: null },
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
   dotenv.config();
   await ConnectDB();
   
-  requestAttestations()
+  requestEventAttestations()
     .then(() => {
       res.send({ ok: true });
     })

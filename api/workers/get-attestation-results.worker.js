@@ -12,7 +12,7 @@ const ATTESTATION_RESULTS_OFFSET_MINUTES = 5;
 /**
  * Updates events results.
  */
-export async function getAttestationResult() {
+export async function getEventAttestationResults() {
   const events = await SportEventModel.find({
     uid: { $ne: null },
     winner: { $ne: null },
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
   dotenv.config();
   await ConnectDB();
   
-  getAttestationResult()
+  getEventAttestationResults()
     .then(() => {
       res.send({ ok: true });
     })
