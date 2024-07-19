@@ -9,8 +9,10 @@ dotenv.config();
   await ConnectDB();
   // await requestAttestation("0x43042e862a4d246f6614903e1850cc6090134225581b099f256a9d7d161b6ac6");
   await requestAttestations();
-})().catch(async (err) => {
-  console.log(err);
+  process.exit(0);
+})().catch(async (error) => {
+  console.log(error);
+  process.exit(1);
 });
 
 

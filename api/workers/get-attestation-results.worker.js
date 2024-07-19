@@ -2,17 +2,28 @@ import dotenv from 'dotenv';
 import ConnectDB from "../../lib/db.js";
 import SportEventModel from "../../lib/models.js";
 import { sendSlackWebhook } from '../../lib/slack-webhook.js';
-import { requestAttestation } from '../../lib/attestation.js';
+import { getAttestationResult } from '../../lib/attestation.js';
+
+/**
+ * Update results after this period of hours.
+ */
+const ATTESTATION_RESULTS_OFFSET_MINUTES = 5;
 
 /**
  * Updates events results.
  */
-export async function requestAttestations() {
+export async function getAttestationResult() {
   const events = await SportEventModel.find({
     uid: { $ne: null },
     winner: { $ne: null },
     results: { $ne: null },
-    attestationData: null
+    "attestationData.encodedAttestationRequest": { $ne: null },
+    "attestationData.roundOffset": { $ne: null },
+    "attestationData.roundDuration": { $ne: null },
+    "attestationData.submissionRoundID": { $ne: null },
+    "attestationData.attestationSubmitTime": {
+      $lte: Math.floor(Date.now() / 1000) - ATTESTATION_RESULTS_OFFSET_MINUTES * 60 // Attestations that were submitted ATTESTATION_RESULTS_OFFSET_MINUTES ago.
+    }
   });
 
   if (!events.length) {
@@ -22,14 +33,14 @@ export async function requestAttestations() {
 
   for (const event of events) {
     try {
-      await requestAttestation(event.uid);
+      await getAttestationResult(event.uid);
     } catch (error) {
-      console.log('Error while requesting attestation: ');
+      console.log('Error while getting attestation results: ');
       console.log(error);
   
       await sendSlackWebhook(
         `
-        Error while requesting attestation for event:\n
+        Error while getting attestation for event:\n
         - UID: \`${event.uid}\`\n
         - Teams: \`${event.teams.join(' vs ')}\`\n
         - Sport: \`${event.sport}\`\n
@@ -51,7 +62,7 @@ export default async function handler(req, res) {
   dotenv.config();
   await ConnectDB();
   
-  requestAttestations()
+  getAttestationResult()
     .then(() => {
       res.send({ ok: true });
     })
