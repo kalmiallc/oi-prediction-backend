@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import { Sports } from "../lib/types.js";
 import { getSchedule } from "../lib/olympics-api.js";
 import { PARSE_SPORTS } from "../lib/events-scrapping.js";
+import { isTeamValid } from "../lib/utils.js";
 
 dotenv.config();
 
@@ -26,7 +27,16 @@ dotenv.config();
     }
   }
 
-  console.log(JSON.stringify(Array.from(teams), null, 2));
+  const parsedTeams = Array.from(teams);
+  console.log(JSON.stringify(parsedTeams, null, 2));
+
+  for (const team of parsedTeams) {
+    if (!isTeamValid(team)) {
+      console.log('Invalid team: ', team);
+    }
+  }
+
+
 
   process.exit(0);
 })().catch(async (err) => {
