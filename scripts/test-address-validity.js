@@ -8,10 +8,11 @@ dotenv.config();
     "btc",
     "tb1p4mdyx3dvgk4dhvv8yv2dtuymf00wxhgkkjheqm7526fu7znnd6msw3qxvj"
   );
-  // process.exit(0);
+  
+  process.exit(0);
 })().catch(async (err) => {
   console.log(err);
-  // process.exit(1);
+  process.exit(1);
 });
 
 
