@@ -12,6 +12,7 @@
 		"updateUpcomingEvents": "node ./scripts/update-upcoming-events.js",
 		"updateEventsResults": "node ./scripts/update-events-results.js",
 		"requestAttestation": "node ./scripts/request-attestation.js",
+		"getAttestationResults": "node ./scripts/get-attestation-result.js",
 		"getTeams": "node ./scripts/get-teams.js"
 	},
 	"keywords": [],

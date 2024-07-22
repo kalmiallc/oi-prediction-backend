@@ -23,7 +23,8 @@ export async function getEventAttestationResults() {
     "attestationData.submissionRoundID": { $ne: null },
     "attestationData.attestationSubmitTime": {
       $lte: Math.floor(Date.now() / 1000) - ATTESTATION_RESULTS_OFFSET_MINUTES * 60 // Attestations that were submitted ATTESTATION_RESULTS_OFFSET_MINUTES ago.
-    }
+    },
+    "attestationData.fullProof": null
   });
 
   if (!events.length) {
