@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { addEvent } from "../../lib/blockchain.js";
+import { addEvent, addEventBulk } from "../../lib/blockchain.js";
 import ConnectDB from "../../lib/db.js";
 import { PARSE_SPORTS } from "../../lib/events-scrapping.js";
 import SportEventModel from "../../lib/models.js";
@@ -7,6 +7,10 @@ import { getSchedule } from '../../lib/olympics-api.js';
 import { Sports } from "../../lib/types.js";
 import { createUid, dateToUtc, getGenderByIndex, getGenderFromDescription, getSportIndex, isTeamValid, sleep } from "../../lib/utils.js";
 
+/**
+ * Add event batch size.
+ */
+const ADD_EVENT_BATCH_SIZE = 30;
 
 /**
  * Checks if certain sports event can be tied.
@@ -164,7 +168,7 @@ export async function parseEvents() {
  * Adds all parsed events to contract.
  */
 export async function addEventsToContract() {
-  const events = await SportEventModel.find({ uid: { $ne: null } });
+  const events = await SportEventModel.find({ uid: { $ne: null }, txHash: null });
 
   let idx = 0;
   while (idx !== events.length) {
@@ -187,6 +191,28 @@ export async function addEventsToContract() {
 }
 
 /**
+ * Adds all parsed events to contract in bulk.
+ */
+export async function addEventsToContractBulk() {
+  const events = await SportEventModel.find({ uid: { $ne: null }, txHash: null });
+
+  const batches = [];
+  for (let i = 0; i < events.length; i += ADD_EVENT_BATCH_SIZE) {
+    batches.push(events.slice(i, i + ADD_EVENT_BATCH_SIZE));
+  }
+
+  try {
+    for (const batch of batches) {
+      await addEventBulk(batch);
+    }
+  } catch (error) {
+    console.log(error);
+
+    throw error;
+  }
+}
+
+/**
  * Worker handler.
  * @param {*} req Request.
  * @param {*} res Response.
@@ -197,7 +223,7 @@ export default async function handler(req, res) {
 
   try {
     await parseEvents();
-    await addEventsToContract();
+    await addEventsToContractBulk();
 
     res.send({ ok: true });
   } catch (error) {
