@@ -5,13 +5,19 @@ import { sendSlackWebhook } from '../../lib/slack-webhook.js';
 import { requestAttestation } from '../../lib/attestation.js';
 
 /**
- * Updates events results.
+ * Request event attestation after this period of hours.
+ */
+const END_PERIOD_HOURS = 2;
+
+/**
+ * Request events attestation.
  */
 export async function requestEventAttestations() {
   const events = await SportEventModel.find({
+    endTime: {
+      $lte: Math.floor(Date.now() / 1000) - END_PERIOD_HOURS * 60 * 60 // Events that ended END_PERIOD_HOURS ago.
+    },
     uid: { $ne: null },
-    winner: { $ne: null },
-    results: { $ne: null },
     attestationData: null
   });
 

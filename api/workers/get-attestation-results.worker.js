@@ -10,13 +10,11 @@ import { getAttestationResult } from '../../lib/attestation.js';
 const ATTESTATION_RESULTS_OFFSET_MINUTES = 5;
 
 /**
- * Updates events results.
+ * Gets events attestation results.
  */
 export async function getEventAttestationResults() {
   const events = await SportEventModel.find({
     uid: { $ne: null },
-    winner: { $ne: null },
-    results: { $ne: null },
     "attestationData.encodedAttestationRequest": { $ne: null },
     "attestationData.roundOffset": { $ne: null },
     "attestationData.roundDuration": { $ne: null },
