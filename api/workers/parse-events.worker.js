@@ -91,7 +91,21 @@ export function parseEvent(match, sport) {
       teams.push(team2);
 
       const tied = canBeTied(sport, match.eventUnitName, teams)
-      const initialBets = getInitialBets(Sports[sport], team1, team2, tied)
+      let initialBets = getInitialBets(Sports[sport], team1, team2, tied)
+      if (!initialBets) {
+        initialBets = {};
+
+        if (tied) {
+          const initialBet = process.env.BET_INITIAL_POOL / 3;
+          initialBets[teams[0]] = initialBet;
+          initialBets[teams[1]] = initialBet;
+          initialBets['DRAW'] = initialBet;
+        } else {
+          const initialBet = process.env.BET_INITIAL_POOL / 2;
+          initialBets[teams[0]] = initialBet;
+          initialBets[teams[1]] = initialBet;
+        }
+      }
       
       choices.push({
         choice: teams[0],

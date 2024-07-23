@@ -74,13 +74,22 @@ export async function updateEvents() {
           teams.push(team2);
           matchName += ` - ${teams.join(' vs ')}`;
 
+          let initialBets = getInitialBets(Sports[sport], team1, team2, false)
+          if (!initialBets) {
+            initialBets = {};
+
+            const initialBet = process.env.BET_INITIAL_POOL / 2;
+            initialBets[teams[0]] = initialBet;
+            initialBets[teams[1]] = initialBet;
+          }
+
           choices.push({
             choice: teams[0],
-            initialBet: 10
+            initialBet: initialBets[teams[0]]
           });
           choices.push({
             choice: teams[1],
-            initialBet: 10
+            initialBet: initialBets[teams[1]]
           });
 
           const parsedDate = new Date(scheduledEvent.startDate).toISOString().split('T');
