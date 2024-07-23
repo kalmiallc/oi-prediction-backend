@@ -5,7 +5,7 @@ import { PARSE_SPORTS } from "../../lib/events-scrapping.js";
 import SportEventModel from "../../lib/models.js";
 import { getSchedule } from '../../lib/olympics-api.js';
 import { Sports } from "../../lib/types.js";
-import { createUid, dateToUtc, getGenderByIndex, getGenderFromDescription, getSportIndex, isTeamValid, sleep } from "../../lib/utils.js";
+import { createUid, dateToUtc, getGenderByIndex, getGenderFromDescription, getInitialBets, getSportIndex, isTeamValid, sleep } from "../../lib/utils.js";
 
 /**
  * Add event batch size.
@@ -89,23 +89,27 @@ export function parseEvent(match, sport) {
     if (isTeamValid(team1) && isTeamValid(team2)) {
       teams.push(team1);
       teams.push(team2);
-      matchName += ` - ${teams.join(' vs ')}`;
 
+      const tied = canBeTied(sport, match.eventUnitName, teams)
+      const initialBets = getInitialBets(Sports[sport], team1, team2, tied)
+      
       choices.push({
         choice: teams[0],
-        initialBet: 10
+        initialBet: initialBets[teams[0]]
       });
       choices.push({
         choice: teams[1],
-        initialBet: 10
+        initialBet: initialBets[teams[1]]
       });
 
-      if (canBeTied(sport, match.eventUnitName, teams)) {
+      if (tied) {
         choices.push({
           choice: 'DRAW',
-          initialBet: 10
+          initialBet: initialBets['DRAW']
         });
       }
+
+      matchName += ` - ${teams.join(' vs ')}`;
     }
   }
 
