@@ -170,6 +170,10 @@ export async function parseEvents() {
       const schedule = await getSchedule(sport);
       const parsedSchedule = [];
       for (const match of schedule) {
+        if (match.status === 'FINISHED') {
+          continue;
+        }
+
         const parsedMatch = parseEvent(match, sport);
         parsedSchedule.push(parsedMatch);
       }
