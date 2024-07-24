@@ -85,11 +85,11 @@ export async function updateEvents() {
 
           choices.push({
             choice: teams[0],
-            initialBet: initialBets[teams[0]]
+            initialBet: parseInt(initialBets[teams[0]], 10)
           });
           choices.push({
             choice: teams[1],
-            initialBet: initialBets[teams[1]]
+            initialBet: parseInt(initialBets[teams[1]], 10)
           });
 
           const parsedDate = new Date(scheduledEvent.startDate).toISOString().split('T');
