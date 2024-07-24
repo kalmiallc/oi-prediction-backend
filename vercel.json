@@ -33,7 +33,7 @@
     },
     {
       "path": "/api/workers/get-attestation-results.worker",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/3 * * * *"
     }
   ]
 }
