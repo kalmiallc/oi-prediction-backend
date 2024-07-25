@@ -109,17 +109,17 @@ export function parseEvent(match, sport) {
       
       choices.push({
         choice: teams[0],
-        initialBet: parseInt(initialBets[teams[0]], 10)
+        initialBet: initialBets[teams[0]]
       });
       choices.push({
         choice: teams[1],
-        initialBet: parseInt(initialBets[teams[1]], 10)
+        initialBet: initialBets[teams[1]]
       });
 
       if (tied) {
         choices.push({
           choice: 'DRAW',
-          initialBet: parseInt(initialBets['DRAW'], 10)
+          initialBet: initialBets['DRAW']
         });
       }
 
