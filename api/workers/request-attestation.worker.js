@@ -7,7 +7,7 @@ import { requestAttestation } from '../../lib/attestation.js';
 /**
  * Request event attestation after this period of hours.
  */
-const END_PERIOD_HOURS = 2;
+const END_PERIOD_HOURS = 1;
 
 /**
  * Request events attestation.
