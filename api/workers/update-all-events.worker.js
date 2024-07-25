@@ -61,6 +61,7 @@ export async function updateAllEvents() {
       uid: { $ne: null },
       winner: null,
       sport: Sports[sport],
+      attestationData: null,
       canceled: false
     });
     
