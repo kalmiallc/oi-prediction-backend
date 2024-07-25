@@ -17,7 +17,12 @@ import { createUid, dateToUtc, isTeamValid } from "../../lib/utils.js";
 export async function updateEvents() {
   const sports = Object.keys(Sports).filter(key => PARSE_SPORTS.includes(Sports[key]));
   for (const sport of sports) {
-    const events = await SportEventModel.find({ uid: null, sport: Sports[sport] });
+    const events = await SportEventModel.find({
+      uid: null,
+      sport: Sports[sport],
+      canceled: false
+    });
+
     if (!events.length) {
       continue;
     }

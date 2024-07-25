@@ -22,7 +22,8 @@ export async function getEventAttestationResults() {
     "attestationData.attestationSubmitTime": {
       $lte: Math.floor(Date.now() / 1000) - ATTESTATION_RESULTS_OFFSET_MINUTES * 60 // Attestations that were submitted ATTESTATION_RESULTS_OFFSET_MINUTES ago.
     },
-    "attestationData.fullProof": null
+    "attestationData.fullProof": null,
+    canceled: false
   });
 
   if (!events.length) {

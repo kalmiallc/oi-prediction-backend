@@ -18,7 +18,8 @@ export async function requestEventAttestations() {
       $lte: Math.floor(Date.now() / 1000) - END_PERIOD_HOURS * 60 * 60 // Events that ended END_PERIOD_HOURS ago.
     },
     uid: { $ne: null },
-    attestationData: null
+    attestationData: null,
+    canceled: false
   });
 
   if (!events.length) {

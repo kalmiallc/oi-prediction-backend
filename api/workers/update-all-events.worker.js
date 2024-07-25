@@ -57,7 +57,13 @@ function isEventChanged(scheduledEvent, event) {
 export async function updateAllEvents() {
   const sports = Object.keys(Sports).filter(key => PARSE_SPORTS.includes(Sports[key]));
   for (const sport of sports) {
-    const events = await SportEventModel.find({ uid: { $ne: null }, winner: null, sport: Sports[sport]  });
+    const events = await SportEventModel.find({
+      uid: { $ne: null },
+      winner: null,
+      sport: Sports[sport],
+      canceled: false
+    });
+    
     if (!events.length) {
       continue;
     }
