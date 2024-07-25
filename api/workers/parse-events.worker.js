@@ -10,7 +10,7 @@ import { createUid, dateToUtc, getGenderByIndex, getGenderFromDescription, getIn
 /**
  * Add event batch size.
  */
-const ADD_EVENT_BATCH_SIZE = 30;
+const ADD_EVENT_BATCH_SIZE = 10;
 
 /**
  * Checks if certain sports event can be tied.
@@ -170,10 +170,6 @@ export async function parseEvents() {
       const schedule = await getSchedule(sport);
       const parsedSchedule = [];
       for (const match of schedule) {
-        if (match.status === 'FINISHED') {
-          continue;
-        }
-
         const parsedMatch = parseEvent(match, sport);
         parsedSchedule.push(parsedMatch);
       }

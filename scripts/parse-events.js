@@ -6,8 +6,8 @@ dotenv.config();
 
 (async () => {
   await ConnectDB();
-  // await parseEvents();
-  // await addEventsToContractBulk();
+  await parseEvents();
+  await addEventsToContractBulk();
   // await addEventsToContract();
 
   process.exit(0);

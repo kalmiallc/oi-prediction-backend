@@ -6,7 +6,6 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "nodemon api/index.js",
 		"import": "node ./scripts/update-db.js",
-		"testAddressValidity": "node ./scripts/test-address-validity.js",
 		"parseEvents": "node ./scripts/parse-events.js",
 		"updateUpcomingEvents": "node ./scripts/update-upcoming-events.js",
 		"requestAttestation": "node ./scripts/request-attestation.js",
