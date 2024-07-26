@@ -23,6 +23,7 @@ function isEventChanged(scheduledEvent, event) {
   const endTimeEpoch = new Date(dateToUtc(scheduledEvent.endDate)).getTime() / 1000;
 
   if (startTimeEpoch !== event.startTime || endTimeEpoch !== event.endTime) {
+    console.log('Start time change')
     return true;
   }
 
@@ -31,19 +32,22 @@ function isEventChanged(scheduledEvent, event) {
     teams = [scheduledEvent.competitors[0].name, scheduledEvent.competitors[1].name];
 
     if (teams.join(',') !== event.teams.join(',')) {
+      console.log('Teams change.')
       return true;
     }
   }
 
-  const gender = getGenderFromDescription(match.eventUnitName);
+  const gender = getGenderFromDescription(scheduledEvent.eventUnitName);
   const genderIndex = getGenderByIndex(gender);
   if (genderIndex !== event.genderByIndex) {
+    console.log('Gender change.')
     return true;
   }
 
   if (event.uid) {
     const uid = createUid(event.sportByIndex, genderIndex, startTimeEpoch, teams);
     if (event.uid !== uid) {
+      console.log('UID change.')
       return true;
     }
   }
@@ -110,18 +114,33 @@ export async function updateAllEvents() {
 
       if (isEventChanged(scheduledEvent, event)) {
         try {
+          // Add new event.
+          const parsedEvent = parseEvent(scheduledEvent, sport)
+
+          const existingEvent = await SportEventModel.findOne({ uid: parsedEvent.uid });
+          if (existingEvent && existingEvent.id) {
+            existingEvent.canceled = true;
+            await existingEvent.save();
+
+            parsedEvent.startTime += 1;
+            parsedEvent.uid = createUid(parsedEvent.sportByIndex, parsedEvent.genderByIndex, parsedEvent.startTime, parsedEvent.teams);
+          }
+
+          if (parsedEvent.uid === event.uid) {
+            console.log('No actual change - UIDs are the same after checks.')
+            continue;
+          }
+
+          const newEvent = await SportEventModel.create(parsedEvent);
+          if (parsedEvent.uid) {
+            await addEvent(parsedEvent.uid);
+          }
+
           // Cancel existing event.
           event.canceled = true;
           await event.save();
           if (event.uid && event.txHash) {
             await cancelEvent(event.uid);
-          }
-
-          // Add new event.
-          const parsedEvent = parseEvent(scheduledEvent, sport)
-          const newEvent = await SportEventModel.create(parsedEvent);
-          if (parsedEvent.uid) {
-            await addEvent(parsedEvent.uid);
           }
 
           await sendSlackWebhook(
@@ -134,6 +153,7 @@ export async function updateAllEvents() {
             `,
             true
           );
+
 
         } catch (error) {
           await sendSlackWebhook(

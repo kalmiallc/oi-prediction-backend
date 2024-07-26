@@ -7,6 +7,7 @@
 		"start": "nodemon api/index.js",
 		"import": "node ./scripts/update-db.js",
 		"parseEvents": "node ./scripts/parse-events.js",
+		"updateAllEvents": "node ./scripts/update-all-events.js",
 		"updateUpcomingEvents": "node ./scripts/update-upcoming-events.js",
 		"requestAttestation": "node ./scripts/request-attestation.js",
 		"getAttestationResults": "node ./scripts/get-attestation-result.js",
