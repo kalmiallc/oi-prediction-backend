@@ -1,6 +1,15 @@
-# OI Prediction Showcase backend
+# Olympics Prediction Showcase - Backend
 
 This repository contains a backend  workers and initial data storage for the Olympics showcase, written in Express.js. Data is stored in MongoDB, and Vercel workers are used to run cron parsers.
+
+The complete showcase consists of four repositories:
+
+- [Prediction smart contract](https://github.com/kalmiallc/oi-prediction-smartcontract)
+- [Front-end application](https://github.com/kalmiallc/oi-prediction-webapp)
+- [Backend application](https://github.com/kalmiallc/oi-prediction-backend) which calls the verification provider API for verification
+- [Verification server](https://github.com/kalmiallc/oi-match-attestation-server)
+
+The complete guide can be found [here](https://github.com/kalmiallc/oi-flare-prediction-instructions)
 
 Olympics Prediction Showcase is a simple sports results prediction application centered around the Olympics, enabling users to view and place predictions on various Olympic team sports. This decentralized application (dApp) features a frontend that directly interacts with a smart contract, ensuring all prediction data is securely provided by the smart contract.
 
