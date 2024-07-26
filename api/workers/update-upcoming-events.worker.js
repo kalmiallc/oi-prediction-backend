@@ -9,7 +9,7 @@ import SportEventModel from "../../lib/models.js";
 import { getSchedule } from '../../lib/olympics-api.js';
 import { sendSlackWebhook } from '../../lib/slack-webhook.js';
 import { Sports } from "../../lib/types.js";
-import { createUid, dateToUtc, includesWinnerOrLooser } from "../../lib/utils.js";
+import { createUid, dateToUtc, isTeamValid } from "../../lib/utils.js";
 
 /**
  * Updates events.
@@ -17,7 +17,12 @@ import { createUid, dateToUtc, includesWinnerOrLooser } from "../../lib/utils.js
 export async function updateEvents() {
   const sports = Object.keys(Sports).filter(key => PARSE_SPORTS.includes(Sports[key]));
   for (const sport of sports) {
-    const events = await SportEventModel.find({ uid: null, sport: Sports[sport] });
+    const events = await SportEventModel.find({
+      uid: null,
+      sport: Sports[sport],
+      canceled: false
+    });
+
     if (!events.length) {
       continue;
     }
@@ -30,7 +35,7 @@ export async function updateEvents() {
 
       await sendSlackWebhook(
         `
-        Error while schedule data for sport. Please check if API still works: \n
+        Error while getting schedule data for sport. Please check if API still works: \n
         - Sport: \`${sport}\`\n
         - Error: \`${error.message}\`\n
         `,
@@ -49,6 +54,15 @@ export async function updateEvents() {
       const scheduledEvent = schedule.find((s) => s.id === event._externalId);
       if (!scheduledEvent) {
         console.log('Event not found: ' + event.id);
+
+        await sendSlackWebhook(
+          `
+          Scrapped event not matched to any event in database: \n
+          - Event: ${JSON.stringify(scheduledEvent, null, w)}\n
+          `,
+          true
+        );
+
         continue;
       }
 
@@ -60,18 +74,27 @@ export async function updateEvents() {
         const team1 = scheduledEvent.competitors[0].name;
         const team2 = scheduledEvent.competitors[1].name;
 
-        if (!includesWinnerOrLooser(team1, team2)) {
+        if (isTeamValid(team1) && isTeamValid(team2)) {
           teams.push(team1);
           teams.push(team2);
           matchName += ` - ${teams.join(' vs ')}`;
 
+          let initialBets = getInitialBets(Sports[sport], team1, team2, false)
+          if (!initialBets) {
+            initialBets = {};
+
+            const initialBet = process.env.BET_INITIAL_POOL / 2;
+            initialBets[teams[0]] = initialBet;
+            initialBets[teams[1]] = initialBet;
+          }
+
           choices.push({
             choice: teams[0],
-            initialBet: 10
+            initialBet: parseInt(initialBets[teams[0]], 10)
           });
           choices.push({
             choice: teams[1],
-            initialBet: 10
+            initialBet: parseInt(initialBets[teams[1]], 10)
           });
 
           const parsedDate = new Date(scheduledEvent.startDate).toISOString().split('T');

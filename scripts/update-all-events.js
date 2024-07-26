@@ -1,11 +1,12 @@
 import * as dotenv from "dotenv";
 import ConnectDB from "../lib/db.js";
-import { updateEventsResults } from "../api/workers/update-events-results.worker.js";
+import { updateAllEvents } from "../api/workers/update-all-events.worker.js";
+
 dotenv.config();
 
 (async () => {
   await ConnectDB();
-  await updateEventsResults();
+  await updateAllEvents();
 
   process.exit(0);
 })().catch(async (err) => {

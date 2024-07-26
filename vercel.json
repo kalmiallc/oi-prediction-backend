@@ -8,7 +8,13 @@
     "api/workers/update-upcoming-events.worker.js": {
       "maxDuration": 300
     },
-    "api/workers/update-events-results.worker.js": {
+    "api/workers/update-all-events.worker.js": {
+      "maxDuration": 300
+    },
+    "api/workers/request-attestation.worker.js": {
+      "maxDuration": 300
+    },
+    "api/workers/get-attestation-results.worker.js": {
       "maxDuration": 300
     }
   },
@@ -18,8 +24,16 @@
       "schedule": "0 * * * *"
     },
     {
-      "path": "/api/workers/update-events-results.worker",
-      "schedule": "*/30 * * * *"
+      "path": "/api/workers/update-all-events.worker",
+      "schedule": "* */6 * * *"
+    },
+    {
+      "path": "/api/workers/request-attestation.worker.js",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/workers/get-attestation-results.worker",
+      "schedule": "*/3 * * * *"
     }
   ]
 }
